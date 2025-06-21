@@ -62,9 +62,12 @@
   "dependencies": {
     "@google-cloud/functions-framework": "^3.0.0",
     "@google-cloud/pubsub": "^4.0.0",
-    "mailparser": "^3.0.0"
-  }
-  ,
+    "@suin/email-data": "^1.0.0",
+    "@suin/event-data": "^1.0.0",
+    "busboy": "^1.6.0",
+    "mailparser": "^3.0.0",
+    "zod": "^3.22.0"
+  },
   "devDependencies": {
     "@google-cloud/functions-framework": "^3.4.0",
     "@semantic-release/changelog": "^6.0.3",
