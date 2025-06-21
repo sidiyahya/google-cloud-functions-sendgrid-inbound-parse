@@ -21,5 +21,22 @@ export const parseEmailData = (emailRawString: string): Promise<EmailData> =>
     ),
   )
 
-const toAddressList = (addressObject?: AddressObject): EmailData['to'] =>
-  addressObject?.value.map(({ name, address }) => ({ name, address })) ?? []
+const toAddressList = (addressObject?: AddressObject | AddressObject[]): EmailData['to'] => {
+  if (!addressObject) return []
+
+  // Handle array of AddressObject
+  if (Array.isArray(addressObject)) {
+    return addressObject.flatMap(addr => 
+      addr.value.map(({ name, address }) => ({ 
+        name, 
+        address: address || '' 
+      }))
+    )
+  }
+
+  // Handle single AddressObject
+  return addressObject.value.map(({ name, address }) => ({ 
+    name, 
+    address: address || '' 
+  }))
+}

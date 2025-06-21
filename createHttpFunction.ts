@@ -14,7 +14,8 @@ export const createHttpFunction = ({
   res: Pick<Response, 'send' | 'end' | 'status'>,
 ): Promise<void> => {
   if (req.method !== 'POST') {
-    return res.status(405).send('Only POST method is supported').end()
+    res.status(405).send('Only POST method is supported').end()
+    return
   }
 
   // Generate correlationId
@@ -27,7 +28,9 @@ export const createHttpFunction = ({
     formData = await parseFormData(req)
   } catch (error) {
     logger.error('Failed to parse the form data', { error })
-    return res.status(400).send(error.message).end()
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    res.status(400).send(errorMessage).end()
+    return
   }
   logger.info(`Form data was parsed`)
 
@@ -37,7 +40,9 @@ export const createHttpFunction = ({
     sendgridPayload = parseSendgridPayload(formData)
   } catch (error) {
     logger.error('Failed to parse the SendGrid form data', { error, formData })
-    return res.status(400).send(error.message).end()
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    res.status(400).send(errorMessage).end()
+    return
   }
   logger.info('SendGrid payload was parsed')
 
@@ -49,7 +54,9 @@ export const createHttpFunction = ({
     logger.error('Failed to parse email source', {
       email: sendgridPayload.email,
     })
-    return res.status(400).send(error.message).end()
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    res.status(400).send(errorMessage).end()
+    return
   }
   logger.info('The email source was parsed')
 
@@ -63,6 +70,7 @@ export const createHttpFunction = ({
       emailData,
     })
     res.status(500).send('Something wrong')
+    return
   }
 
   res.status(200).send('OK')
