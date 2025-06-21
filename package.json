@@ -60,7 +60,6 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.0.0",
     "@google-cloud/pubsub": "^4.0.0",
     "@suin/email-data": "^1.0.0",
     "@suin/event-data": "^1.0.0",
