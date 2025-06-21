@@ -1,16 +1,18 @@
 import type { Topic } from '@google-cloud/pubsub'
 import type { EmailData } from '@suin/email-data'
 import { newEventData } from '@suin/event-data'
-import type { Request, Response } from 'express'
+import type { Request as ExpressRequest, Response } from 'express'
 import { parseEmailData } from './parseEmailData'
 import { FormData, parseFormData } from './parseFormData'
 import { parseSendgridPayload, SendgridPayload } from './sendgridPayload'
+
+type Request = Pick<ExpressRequest, 'method' | 'headers' | 'rawBody'>
 
 export const createHttpFunction = ({
   topic,
   logger = defaultLogger,
 }: Dependencies) => async (
-  req: Pick<Request, 'method' | 'headers' | 'rawBody'>,
+  req: Request,
   res: Pick<Response, 'send' | 'end' | 'status'>,
 ): Promise<void> => {
   if (req.method !== 'POST') {
@@ -22,14 +24,19 @@ export const createHttpFunction = ({
   const correlationId = generateCorrelationId(req.headers, logger)
   logger.info(`CorrelationId generated: ${correlationId}`, { correlationId })
 
+  if (!req.rawBody) {
+    logger.error('Request body is empty')
+    res.status(400).send('Request body is required').end()
+    return
+  }
+
   // Parses form data
   let formData: FormData
   try {
     formData = await parseFormData(req)
   } catch (error) {
     logger.error('Failed to parse the form data', { error })
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    res.status(400).send(errorMessage).end()
+    res.status(400).send((error as Error).message).end()
     return
   }
   logger.info(`Form data was parsed`)
@@ -40,8 +47,7 @@ export const createHttpFunction = ({
     sendgridPayload = parseSendgridPayload(formData)
   } catch (error) {
     logger.error('Failed to parse the SendGrid form data', { error, formData })
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    res.status(400).send(errorMessage).end()
+    res.status(400).send((error as Error).message).end()
     return
   }
   logger.info('SendGrid payload was parsed')
@@ -54,8 +60,7 @@ export const createHttpFunction = ({
     logger.error('Failed to parse email source', {
       email: sendgridPayload.email,
     })
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    res.status(400).send(errorMessage).end()
+    res.status(400).send((error as Error).message).end()
     return
   }
   logger.info('The email source was parsed')
@@ -77,7 +82,7 @@ export const createHttpFunction = ({
 }
 
 const generateCorrelationId = (
-  headers: Request['headers'],
+  headers: ExpressRequest['headers'],
   logger: Logger,
 ): string => {
   const id = headers['function-execution-id']
