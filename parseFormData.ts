@@ -8,7 +8,12 @@ export const parseFormData = ({
   headers,
   rawBody,
 }: Pick<Request, 'headers' | 'rawBody'>): Promise<FormData> =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
+    if (!rawBody) {
+      reject(new Error('rawBody is required for parsing form data'))
+      return
+    }
+
     const fields: FormData = {}
     const bb = busboy({ headers })
     bb.on('field', (name, value) => void (fields[name] = value))
