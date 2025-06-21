@@ -1,4 +1,4 @@
-import type { HttpFunction } from '@google-cloud/functions-framework/build/src/functions'
+import type { HttpFunction } from '@google-cloud/functions-framework'
 import { PubSub } from '@google-cloud/pubsub'
 import { createHttpFunction } from './createHttpFunction'
 

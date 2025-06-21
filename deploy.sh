@@ -10,6 +10,6 @@ gcloud pubsub topics describe ${TOPIC} > /dev/null || {
 
 # Deploy the function
 gcloud functions deploy publishEmailDataOnSendgridInboundParse \
-    --runtime nodejs12 \
+    --runtime nodejs20 \
     --trigger-http \
     --set-env-vars TOPIC=${TOPIC}

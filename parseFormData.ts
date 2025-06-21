@@ -1,4 +1,4 @@
-import Busboy from 'busboy'
+import busboy from 'busboy'
 import type { Request } from 'express'
 
 /**
@@ -10,10 +10,10 @@ export const parseFormData = ({
 }: Pick<Request, 'headers' | 'rawBody'>): Promise<FormData> =>
   new Promise(resolve => {
     const fields: FormData = {}
-    new Busboy({ headers })
-      .on('field', (name, value) => void (fields[name] = value))
-      .on('finish', () => resolve(fields))
-      .end(rawBody)
+    const bb = busboy({ headers })
+    bb.on('field', (name, value) => void (fields[name] = value))
+    bb.on('close', () => resolve(fields))
+    bb.end(rawBody)
   })
 
 export type FormData = { [k: string]: string }
